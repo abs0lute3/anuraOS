@@ -150,6 +150,17 @@ window.addEventListener("load", async () => {
 	swShared.anura = anura;
 	swShared.sh = new anura.fs.Shell();
 	async function initComlink() {
+		const controller =
+			navigator.serviceWorker.controller ??
+			(await navigator.serviceWorker.ready).active;
+
+		if (!controller) {
+			console.warn(
+				"Service worker controller not ready; skipping initComlink.",
+			);
+			return;
+		}
+
 		const { port1, port2 } = new MessageChannel();
 
 		const msg = {
@@ -159,9 +170,9 @@ window.addEventListener("load", async () => {
 
 		comlink.expose(swShared, port1);
 
-		navigator.serviceWorker.controller!.postMessage(msg, [port2]);
+		controller.postMessage(msg, [port2]);
 		if (swShared.anura)
-			navigator.serviceWorker.controller!.postMessage({
+			controller.postMessage({
 				anura_target: "anura.nohost.set",
 			});
 	}
@@ -169,6 +180,7 @@ window.addEventListener("load", async () => {
 	navigator.serviceWorker.addEventListener("controllerchange", initComlink);
 
 	await navigator.serviceWorker.register("/anura-sw.js");
+	await navigator.serviceWorker.ready;
 	initComlink();
 
 	navigator.serviceWorker.addEventListener("message", (event) => {
