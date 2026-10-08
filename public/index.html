@@ -9,7 +9,9 @@
 		<link rel="stylesheet" href="/assets/matter.css" />
 		<link rel="stylesheet" href="/theme.css" />
 		<link rel="stylesheet" href="/bundle.css" />
+		<link rel="stylesheet" href="/install-prompt.css" />
 		<link rel="manifest" href="/manifest.json" />
+		<script src="/page-guards.js" defer></script>
 		<title>AnuraOS</title>
 		<meta name="title" content="AnuraOS" />
 		<meta
@@ -137,5 +139,18 @@
 		<!-- prod only ^ -->
 	</head>
 
-	<body></body>
+	<body>
+		<dialog id="anura-install-dialog">
+			<form method="dialog">
+				<h2>Install AnuraOS to your taskbar?</h2>
+				<p>Add AnuraOS to your apps and taskbar for quick access.</p>
+				<div>
+					<button value="dismiss">Not now</button>
+					<button id="anura-install-button" type="button" value="install">
+						Install
+					</button>
+				</div>
+			</form>
+		</dialog>
+	</body>
 </html>
