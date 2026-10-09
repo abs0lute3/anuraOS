@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -veu
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+X86_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+
 # good for debugging
 pause() {
     while read -r -t 0.001; do :; done
     read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n'
 }
 
-IMAGES="$(dirname "$0")"/../../build/x86images
+IMAGES="${X86_ROOT}/build/x86images"
 OUT_ROOTFS_TAR="$IMAGES"/alpine-rootfs.tar
 OUT_ROOTFS_BIN="$IMAGES"/alpine-rootfs.bin
 OUT_ROOTFS_MNT="$IMAGES"/alpine-rootfs.mntpoint
@@ -16,13 +19,13 @@ IMAGE_NAME=i386/alpine-full
 
 rm -rf "$IMAGES/alpine-boot" || :
 rm -rf "$IMAGES/alpine-rootfs" || :
-rm -rf $OUT_ROOTFS_BIN || :
-cp ../xfrog.sh .
-cp ../xsetrandr.sh .
-cp -r ../anuramouse .
-cp ../anura-run .
-cd ../epoxy/server; RUSTFLAGS="-C target-feature=+crt-static" cargo +nightly b -F twisp -r --target i686-unknown-linux-gnu; cp ../target/i686-unknown-linux-gnu/release/epoxy-server ../../alpine/;
-cd ../../alpine;
+rm -rf "$OUT_ROOTFS_BIN" || :
+cp "${X86_ROOT}/xfrog.sh" "${SCRIPT_DIR}/"
+cp "${X86_ROOT}/xsetrandr.sh" "${SCRIPT_DIR}/"
+cp -r "${X86_ROOT}/anuramouse" "${SCRIPT_DIR}/"
+cp "${X86_ROOT}/anura-run" "${SCRIPT_DIR}/"
+cd "${X86_ROOT}/epoxy/server"; RUSTFLAGS="-C target-feature=+crt-static" cargo +nightly b -F twisp -r --target i686-unknown-linux-gnu; cp "../target/i686-unknown-linux-gnu/release/epoxy-server" "${SCRIPT_DIR}/";
+cd "${SCRIPT_DIR}";
 
 mkdir -p "$IMAGES"
 docker build . --platform linux/386 --rm --tag "$IMAGE_NAME"
@@ -40,8 +43,8 @@ sudo mount "$loop" "$OUT_ROOTFS_MNT"
 
 sudo tar -xf "$OUT_ROOTFS_TAR" -C "$OUT_ROOTFS_MNT"
 sudo rm -f "$OUT_ROOTFS_MNT/.dockerenv"
-sudo cp resolv.conf "$OUT_ROOTFS_MNT/etc/resolv.conf"
-sudo cp hostname "$OUT_ROOTFS_MNT/etc/hostname"
+sudo cp "${SCRIPT_DIR}/resolv.conf" "$OUT_ROOTFS_MNT/etc/resolv.conf"
+sudo cp "${SCRIPT_DIR}/hostname" "$OUT_ROOTFS_MNT/etc/hostname"
 
 sudo cp -r "$OUT_ROOTFS_MNT/boot" "$IMAGES/alpine-boot"
 sudo umount "$loop"
